@@ -5,112 +5,62 @@ import { TrendingUp, Zap, Target, Trophy } from "lucide-react";
 
 interface StatsPanelProps {
   balance: number;
-  currentBet: number;
-  multiplier: number;
-  round: number;
   streak: number;
   xp: number;
   level: number;
 }
 
-const StatsPanel = ({
-  balance,
-  currentBet,
-  multiplier,
-  round,
-  streak,
-  xp,
-  level,
-}: StatsPanelProps) => {
+const StatsPanel = ({ balance, streak, xp, level }: StatsPanelProps) => {
   const xpProgress = (xp % 1000) / 1000;
-  const potentialWin = currentBet * multiplier;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {/* Balance */}
-      <GlassCard variant="elevated" className="p-3 md:p-4">
+      <GlassCard className="p-3">
         <div className="flex items-center gap-2 mb-1">
-          <div className="p-1.5 rounded-lg bg-secondary/20">
-            <TrendingUp className="w-4 h-4 text-secondary" />
-          </div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">Balance</span>
+          <TrendingUp className="w-4 h-4 text-primary" />
+          <span className="text-xs text-muted-foreground">Balance</span>
         </div>
-        <NeonText variant="secondary" className="text-xl md:text-2xl">
+        <NeonText variant="primary" className="text-xl">
           {balance.toLocaleString()}
         </NeonText>
-        <span className="text-xs text-muted-foreground">MON</span>
       </GlassCard>
 
-      {/* Current Multiplier */}
-      <GlassCard variant="danger" className="p-3 md:p-4">
+      {/* Streak */}
+      <GlassCard className="p-3">
         <div className="flex items-center gap-2 mb-1">
-          <div className="p-1.5 rounded-lg bg-primary/20">
-            <Zap className="w-4 h-4 text-primary" />
-          </div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">Multiplier</span>
+          <Zap className="w-4 h-4 text-accent" />
+          <span className="text-xs text-muted-foreground">Streak</span>
         </div>
-        <motion.div
-          key={multiplier}
-          initial={{ scale: 1.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="flex items-baseline gap-1"
-        >
-          <NeonText variant="primary" className="text-2xl md:text-3xl">
-            {multiplier.toFixed(2)}
-          </NeonText>
-          <span className="text-primary text-sm">x</span>
-        </motion.div>
+        <NeonText variant="accent" className="text-xl">
+          {streak > 0 ? `🔥 ${streak}` : "-"}
+        </NeonText>
       </GlassCard>
 
-      {/* Potential Win */}
-      <GlassCard variant="elevated" className="p-3 md:p-4">
+      {/* Level */}
+      <GlassCard className="p-3">
         <div className="flex items-center gap-2 mb-1">
-          <div className="p-1.5 rounded-lg bg-accent/20">
-            <Target className="w-4 h-4 text-accent" />
-          </div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">Potential</span>
+          <Trophy className="w-4 h-4 text-accent" />
+          <span className="text-xs text-muted-foreground">Level {level}</span>
         </div>
-        <motion.div
-          key={potentialWin}
-          initial={{ y: -10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
-          <NeonText variant="accent" className="text-xl md:text-2xl">
-            {potentialWin.toLocaleString()}
-          </NeonText>
-        </motion.div>
-        <span className="text-xs text-muted-foreground">MON</span>
-      </GlassCard>
-
-      {/* Level & XP */}
-      <GlassCard variant="elevated" className="p-3 md:p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="p-1.5 rounded-lg bg-warning/20">
-            <Trophy className="w-4 h-4 text-warning" />
-          </div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">Level {level}</span>
-        </div>
-        
-        {/* XP Bar */}
-        <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-1">
+        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-warning to-accent"
-            initial={{ width: 0 }}
+            className="h-full bg-gradient-gold"
             animate={{ width: `${xpProgress * 100}%` }}
             transition={{ duration: 0.5 }}
           />
         </div>
-        
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            {xp % 1000} / 1000 XP
-          </span>
-          {streak > 0 && (
-            <span className="text-xs text-primary font-bold">
-              🔥 {streak}
-            </span>
-          )}
+        <p className="text-xs text-muted-foreground mt-1">{xp % 1000}/1000 XP</p>
+      </GlassCard>
+
+      {/* Games Played placeholder */}
+      <GlassCard className="p-3">
+        <div className="flex items-center gap-2 mb-1">
+          <Target className="w-4 h-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Today</span>
         </div>
+        <p className="text-xl font-bold text-foreground">12</p>
+        <p className="text-xs text-muted-foreground">games</p>
       </GlassCard>
     </div>
   );

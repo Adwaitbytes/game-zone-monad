@@ -18,16 +18,16 @@ const NeonText = ({
   children, 
 }: NeonTextProps) => {
   const variants = {
-    primary: "text-neon-primary",
-    secondary: "text-neon-secondary", 
-    accent: "text-neon-accent",
-    warning: "text-warning drop-shadow-[0_0_10px_hsl(var(--warning)/0.8)]",
+    primary: "text-glow-primary",
+    secondary: "text-glow-secondary", 
+    accent: "text-glow-accent",
+    warning: "text-accent",
   };
 
   const baseClassName = cn(
-    "font-display font-bold",
+    "font-bold tracking-tight",
     variants[variant],
-    pulse && "pulse-glow",
+    pulse && "pulse-soft",
     className
   );
 

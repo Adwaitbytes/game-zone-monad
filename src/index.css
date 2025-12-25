@@ -2,83 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
-@import '@fontsource/orbitron/400.css';
-@import '@fontsource/orbitron/700.css';
-@import '@fontsource/orbitron/900.css';
 @import '@fontsource/inter/400.css';
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
 
 @layer base {
   :root {
-    /* Core void blacks */
-    --background: 240 10% 3%;
-    --foreground: 0 0% 95%;
+    /* Refined dark palette - softer, easier on eyes */
+    --background: 220 20% 8%;
+    --foreground: 220 10% 92%;
     
-    /* Card surfaces with depth */
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 95%;
-    --card-elevated: 240 10% 8%;
+    /* Card surfaces with subtle warmth */
+    --card: 220 18% 11%;
+    --card-foreground: 220 10% 92%;
+    --card-elevated: 220 16% 14%;
     
     /* Popover */
-    --popover: 240 10% 5%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 220 18% 10%;
+    --popover-foreground: 220 10% 92%;
     
-    /* Electric crimson - danger/risk/cups */
-    --primary: 350 100% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 350 100% 50%;
+    /* Emerald success - the "safe" color */
+    --primary: 160 70% 45%;
+    --primary-foreground: 220 20% 8%;
+    --primary-glow: 160 80% 50%;
     
-    /* Toxic cyan - safe/success */
-    --secondary: 175 100% 50%;
-    --secondary-foreground: 240 10% 3%;
-    --secondary-glow: 175 100% 40%;
+    /* Warm coral - danger/risk */
+    --secondary: 10 80% 60%;
+    --secondary-foreground: 220 20% 8%;
+    --secondary-glow: 10 90% 55%;
     
     /* Muted surfaces */
-    --muted: 240 10% 12%;
-    --muted-foreground: 240 5% 55%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
     
-    /* Plasma magenta accent */
-    --accent: 300 100% 60%;
-    --accent-foreground: 0 0% 100%;
-    --accent-glow: 300 100% 50%;
+    /* Gold accent - premium feel */
+    --accent: 42 90% 55%;
+    --accent-foreground: 220 20% 8%;
+    --accent-glow: 42 100% 50%;
     
-    /* Warning gold */
-    --warning: 45 100% 55%;
-    --warning-foreground: 240 10% 3%;
+    /* Warning */
+    --warning: 42 90% 55%;
+    --warning-foreground: 220 20% 8%;
     
     /* Destructive */
-    --destructive: 0 85% 55%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
     
     /* Borders and inputs */
-    --border: 240 10% 15%;
-    --input: 240 10% 15%;
-    --ring: 350 100% 60%;
+    --border: 220 15% 20%;
+    --input: 220 15% 18%;
+    --ring: 160 70% 45%;
     
-    --radius: 0.75rem;
+    --radius: 1rem;
     
-    /* Neon glows */
-    --glow-primary: 0 0 30px hsl(350 100% 50% / 0.5), 0 0 60px hsl(350 100% 50% / 0.3);
-    --glow-secondary: 0 0 30px hsl(175 100% 50% / 0.5), 0 0 60px hsl(175 100% 50% / 0.3);
-    --glow-accent: 0 0 30px hsl(300 100% 60% / 0.5), 0 0 60px hsl(300 100% 60% / 0.3);
-    --glow-subtle: 0 0 20px hsl(240 10% 20% / 0.5);
+    /* Refined glows - subtle, not harsh */
+    --glow-primary: 0 0 20px hsl(160 70% 45% / 0.25), 0 0 40px hsl(160 70% 45% / 0.1);
+    --glow-secondary: 0 0 20px hsl(10 80% 60% / 0.25), 0 0 40px hsl(10 80% 60% / 0.1);
+    --glow-accent: 0 0 20px hsl(42 90% 55% / 0.3), 0 0 40px hsl(42 90% 55% / 0.15);
     
-    /* Gradients */
-    --gradient-danger: linear-gradient(135deg, hsl(350 100% 50%) 0%, hsl(320 100% 45%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(175 100% 45%) 0%, hsl(150 100% 40%) 100%);
-    --gradient-surface: linear-gradient(180deg, hsl(240 10% 8%) 0%, hsl(240 10% 4%) 100%);
-    --gradient-glass: linear-gradient(135deg, hsl(240 10% 15% / 0.3) 0%, hsl(240 10% 5% / 0.1) 100%);
+    /* Elegant gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(160 70% 45%) 0%, hsl(170 65% 40%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(10 80% 60%) 0%, hsl(0 70% 55%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(42 90% 55%) 0%, hsl(35 85% 50%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(220 18% 14%) 0%, hsl(220 20% 8%) 100%);
+    --gradient-glass: linear-gradient(135deg, hsl(220 15% 20% / 0.4) 0%, hsl(220 20% 10% / 0.2) 100%);
     
     /* Sidebar */
-    --sidebar-background: 240 10% 4%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 350 100% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 10% 10%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 240 10% 12%;
-    --sidebar-ring: 350 100% 60%;
+    --sidebar-background: 220 20% 6%;
+    --sidebar-foreground: 220 10% 85%;
+    --sidebar-primary: 160 70% 45%;
+    --sidebar-primary-foreground: 220 20% 8%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 220 10% 92%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 160 70% 45%;
   }
 }
 
@@ -97,7 +95,7 @@
     overflow-x: hidden;
   }
   
-  /* Hide scrollbar but keep functionality */
+  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
   }
@@ -117,29 +115,23 @@
 }
 
 @layer components {
-  /* Neon text effects */
-  .text-neon-primary {
+  /* Refined text effects - subtle glow */
+  .text-glow-primary {
     color: hsl(var(--primary));
-    text-shadow: 0 0 10px hsl(var(--primary-glow) / 0.8),
-                 0 0 20px hsl(var(--primary-glow) / 0.5),
-                 0 0 40px hsl(var(--primary-glow) / 0.3);
+    text-shadow: 0 0 12px hsl(var(--primary-glow) / 0.5);
   }
   
-  .text-neon-secondary {
+  .text-glow-secondary {
     color: hsl(var(--secondary));
-    text-shadow: 0 0 10px hsl(var(--secondary-glow) / 0.8),
-                 0 0 20px hsl(var(--secondary-glow) / 0.5),
-                 0 0 40px hsl(var(--secondary-glow) / 0.3);
+    text-shadow: 0 0 12px hsl(var(--secondary-glow) / 0.5);
   }
   
-  .text-neon-accent {
+  .text-glow-accent {
     color: hsl(var(--accent));
-    text-shadow: 0 0 10px hsl(var(--accent-glow) / 0.8),
-                 0 0 20px hsl(var(--accent-glow) / 0.5),
-                 0 0 40px hsl(var(--accent-glow) / 0.3);
+    text-shadow: 0 0 12px hsl(var(--accent-glow) / 0.5);
   }
   
-  /* Glow box effects */
+  /* Box glow effects */
   .glow-primary {
     box-shadow: var(--glow-primary);
   }
@@ -152,73 +144,74 @@
     box-shadow: var(--glow-accent);
   }
   
-  /* Glass morphism */
+  /* Glass morphism - refined */
   .glass {
     background: var(--gradient-glass);
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border) / 0.5);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--border) / 0.4);
   }
   
   .glass-elevated {
-    background: linear-gradient(135deg, hsl(240 10% 12% / 0.6) 0%, hsl(240 10% 6% / 0.4) 100%);
-    backdrop-filter: blur(30px);
+    background: linear-gradient(135deg, hsl(220 16% 16% / 0.7) 0%, hsl(220 18% 11% / 0.5) 100%);
+    backdrop-filter: blur(24px);
     border: 1px solid hsl(var(--border) / 0.3);
   }
   
-  /* Display font */
+  /* Display font style */
   .font-display {
-    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    letter-spacing: 0.05em;
   }
   
-  /* Pulse animations */
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+  /* Pulse animation */
+  .pulse-soft {
+    animation: pulse-soft 2.5s ease-in-out infinite;
   }
   
-  @keyframes pulse-glow {
+  @keyframes pulse-soft {
     0%, 100% {
       opacity: 1;
-      filter: brightness(1);
+      transform: scale(1);
     }
     50% {
-      opacity: 0.8;
-      filter: brightness(1.2);
+      opacity: 0.85;
+      transform: scale(1.02);
     }
   }
   
   /* Heartbeat for tension */
   .heartbeat {
-    animation: heartbeat 0.8s ease-in-out infinite;
+    animation: heartbeat 1s ease-in-out infinite;
   }
   
   @keyframes heartbeat {
     0%, 100% {
       transform: scale(1);
     }
-    14% {
-      transform: scale(1.05);
+    15% {
+      transform: scale(1.04);
     }
-    28% {
+    30% {
       transform: scale(1);
     }
-    42% {
-      transform: scale(1.08);
+    45% {
+      transform: scale(1.06);
     }
-    56% {
+    60% {
       transform: scale(1);
     }
   }
   
-  /* Shimmer effect for loading/attention */
+  /* Shimmer effect */
   .shimmer {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      hsl(var(--primary) / 0.1) 50%,
+      hsl(var(--foreground) / 0.05) 50%,
       transparent 100%
     );
     background-size: 200% 100%;
-    animation: shimmer 2s infinite;
+    animation: shimmer 2.5s infinite;
   }
   
   @keyframes shimmer {
@@ -230,9 +223,9 @@
     }
   }
   
-  /* Floating animation */
+  /* Float animation */
   .float {
-    animation: float 3s ease-in-out infinite;
+    animation: float 4s ease-in-out infinite;
   }
   
   @keyframes float {
@@ -240,41 +233,11 @@
       transform: translateY(0);
     }
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-8px);
     }
   }
   
-  /* Screen flicker for intensity */
-  .flicker {
-    animation: flicker 0.1s infinite;
-  }
-  
-  @keyframes flicker {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.95;
-    }
-  }
-  
-  /* Scanline overlay */
-  .scanlines::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      hsl(0 0% 0% / 0.03) 2px,
-      hsl(0 0% 0% / 0.03) 4px
-    );
-    pointer-events: none;
-    z-index: 100;
-  }
-  
-  /* Vignette effect */
+  /* Subtle vignette */
   .vignette::after {
     content: '';
     position: fixed;
@@ -282,38 +245,47 @@
     background: radial-gradient(
       ellipse at center,
       transparent 0%,
-      transparent 50%,
-      hsl(240 10% 2% / 0.8) 100%
+      transparent 60%,
+      hsl(220 20% 4% / 0.6) 100%
     );
     pointer-events: none;
     z-index: 50;
   }
+  
+  /* Game card hover */
+  .game-card {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .game-card:hover {
+    transform: translateY(-4px);
+  }
 }
 
 @layer utilities {
-  /* Custom gradients */
+  /* Gradient utilities */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
   .bg-gradient-danger {
     background: var(--gradient-danger);
   }
   
-  .bg-gradient-success {
-    background: var(--gradient-success);
+  .bg-gradient-gold {
+    background: var(--gradient-gold);
   }
   
   .bg-gradient-surface {
     background: var(--gradient-surface);
   }
   
-  /* Transition presets */
+  /* Transitions */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .transition-bounce {
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
-  
-  .transition-snap {
-    transition: all 0.15s cubic-bezier(0.4, 0, 1, 1);
   }
 }
