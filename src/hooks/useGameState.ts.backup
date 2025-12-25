@@ -62,83 +62,22 @@ interface GameResult {
   message?: string;
 }
 
-interface GameHistoryEntry {
-  id: string;
-  gameType: GameType;
-  bet: number;
-  won: boolean;
-  amount: number;
-  multiplier: number;
-  timestamp: number;
-}
-
 const INITIAL_BALANCE = 10000;
 const XP_PER_LEVEL = 1000;
-const STORAGE_KEY = "neon-arcade-state";
-const HISTORY_KEY = "neon-arcade-history";
 
-// Load state from localStorage
-const loadState = (): SharedGameState => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return { ...parsed, currentBet: Math.min(parsed.currentBet, parsed.balance) };
-    }
-  } catch (e) {
-    console.error("Failed to load state:", e);
-  }
-  return {
+export const useGameState = () => {
+  // Shared state
+  const [shared, setShared] = useState<SharedGameState>({
     balance: INITIAL_BALANCE,
     currentBet: 100,
     xp: 0,
     level: 1,
     streak: 0,
-    totalWagered: 0,
-    totalWon: 0,
-    gamesPlayed: 0,
-    biggestWin: 0,
-  };
-};
+  });
 
-// Save state to localStorage
-const saveState = (state: SharedGameState) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.error("Failed to save state:", e);
-  }
-};
-
-// Load game history
-const loadHistory = (): GameHistoryEntry[] => {
-  try {
-    const saved = localStorage.getItem(HISTORY_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch (e) {
-    console.error("Failed to load history:", e);
-  }
-  return [];
-};
-
-// Save game history
-const saveHistory = (history: GameHistoryEntry[]) => {
-  try {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 50))); // Keep last 50
-  } catch (e) {
-    console.error("Failed to save history:", e);
-  }
-};
-
-export const useGameState = () => {
-  // Shared state with persistence
-  const [shared, setShared] = useState<SharedGameState>(loadState);
   const [activeGame, setActiveGame] = useState<GameType>("cups");
-  const [gameHistory, setGameHistory] = useState<GameHistoryEntry[]>(loadHistory);
   
-  // Game states
+  // Cup game state
   const [cupGame, setCupGame] = useState<CupGameState>({
     round: 0,
     multiplier: 1.0,
@@ -150,6 +89,7 @@ export const useGameState = () => {
     canCashOut: false,
   });
 
+  // Reaction game state
   const [reactionGame, setReactionGame] = useState<ReactionGameState>({
     isPlaying: false,
     phase: "waiting",
@@ -158,6 +98,7 @@ export const useGameState = () => {
     multiplier: 1.0,
   });
 
+  // Memory game state  
   const [memoryGame, setMemoryGame] = useState<MemoryGameState>({
     isPlaying: false,
     phase: "showing",
@@ -168,6 +109,7 @@ export const useGameState = () => {
     multiplier: 1.0,
   });
 
+  // Crash game state
   const [crashGame, setCrashGame] = useState<CrashGameState>({
     isPlaying: false,
     phase: "betting",
@@ -177,6 +119,7 @@ export const useGameState = () => {
     cashOutMultiplier: 1.0,
   });
 
+  // Game result modal
   const [gameResult, setGameResult] = useState<GameResult>({
     isVisible: false,
     isWin: false,
@@ -185,61 +128,20 @@ export const useGameState = () => {
     gameType: "cups",
   });
 
-  // Refs for timers and game loops - CRITICAL FOR CLEANUP
-  const reactionTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const reactionStartRef = useRef<number>(0);
-  const memoryIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const memoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const crashRAFRef = useRef<number | null>(null);
-  const crashStartTimeRef = useRef<number>(0);
-  const isCrashRunningRef = useRef(false);
+  // Timers
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
 
-  // Persist state changes
-  useEffect(() => {
-    saveState(shared);
-  }, [shared]);
-
-  // Persist history changes
-  useEffect(() => {
-    saveHistory(gameHistory);
-  }, [gameHistory]);
-
-  // Cleanup on unmount - PREVENT MEMORY LEAKS
-  useEffect(() => {
-    return () => {
-      if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current);
-      if (memoryIntervalRef.current) clearInterval(memoryIntervalRef.current);
-      if (memoryTimeoutRef.current) clearTimeout(memoryTimeoutRef.current);
-      if (crashRAFRef.current) cancelAnimationFrame(crashRAFRef.current);
-      isCrashRunningRef.current = false;
-    };
-  }, []);
-
-  // Memoized calculations
-  const winRate = useMemo(() => {
-    if (shared.gamesPlayed === 0) return "0.0";
-    const wins = gameHistory.filter(g => g.won).length;
-    return (wins / shared.gamesPlayed * 100).toFixed(1);
-  }, [shared.gamesPlayed, gameHistory]);
-
-  // Add game to history
-  const addToHistory = useCallback((entry: Omit<GameHistoryEntry, "id" | "timestamp">) => {
-    const newEntry: GameHistoryEntry = {
-      ...entry,
-      id: `${Date.now()}-${Math.random()}`,
-      timestamp: Date.now(),
-    };
-    setGameHistory(prev => [newEntry, ...prev]);
-  }, []);
-
-  // Calculate multiplier for cup game
-  const calculateCupMultiplier = useCallback((round: number, cupsCount: number): number => {
+  // Calculate multiplier for cup game (higher risk, higher reward)
+  const calculateCupMultiplier = (round: number, cupsCount: number): number => {
+    // Base: 1/(cupsCount-1) chance of survival per round
+    // Multiplier = (cupsCount/(cupsCount-1))^round with house edge
     const baseMultiplier = Math.pow(cupsCount / (cupsCount - 1), round);
-    const houseEdge = 0.97;
+    const houseEdge = 0.97; // 3% house edge
     return Number((baseMultiplier * houseEdge).toFixed(2));
-  }, []);
+  };
 
-  // Memoized callbacks for bet management
+  // Shared functions
   const setBetAmount = useCallback((amount: number) => {
     setShared(prev => ({ ...prev, currentBet: Math.max(10, Math.min(prev.balance, amount)) }));
   }, []);
@@ -248,13 +150,11 @@ export const useGameState = () => {
     setShared(prev => {
       const newXP = prev.xp + amount;
       const newLevel = Math.floor(newXP / XP_PER_LEVEL) + 1;
-      if (newLevel > prev.level) {
-        toast.success(`Level Up! Now level ${newLevel}`, { icon: "🎊" });
-      }
       return { ...prev, xp: newXP, level: newLevel };
     });
   }, []);
 
+  // Close result modal
   const closeResult = useCallback(() => {
     setGameResult(prev => ({ ...prev, isVisible: false }));
   }, []);
@@ -266,13 +166,10 @@ export const useGameState = () => {
       return;
     }
 
-    setShared(prev => ({ 
-      ...prev, 
-      balance: prev.balance - prev.currentBet,
-      totalWagered: prev.totalWagered + prev.currentBet,
-      gamesPlayed: prev.gamesPlayed + 1,
-    }));
+    // Place bet
+    setShared(prev => ({ ...prev, balance: prev.balance - prev.currentBet }));
 
+    // Generate bomb position
     const bombPos = Math.floor(Math.random() * 3);
 
     setCupGame({
@@ -287,28 +184,22 @@ export const useGameState = () => {
     });
 
     toast("Choose wisely...", { icon: "🎲" });
-  }, [shared.currentBet, shared.balance, calculateCupMultiplier]);
+  }, [shared.currentBet, shared.balance]);
 
   const selectCup = useCallback((cupIndex: number) => {
     if (!cupGame.isPlaying || cupGame.revealedCup !== null) return;
 
     setCupGame(prev => ({ ...prev, selectedCup: cupIndex }));
 
+    // Reveal after short delay
     setTimeout(() => {
       const hitBomb = cupIndex === cupGame.bombPosition;
 
       if (hitBomb) {
+        // LOSS
         setCupGame(prev => ({ ...prev, revealedCup: cupIndex, isPlaying: false }));
         setShared(prev => ({ ...prev, streak: 0 }));
         
-        addToHistory({
-          gameType: "cups",
-          bet: shared.currentBet,
-          won: false,
-          amount: shared.currentBet,
-          multiplier: cupGame.multiplier,
-        });
-
         setTimeout(() => {
           setGameResult({
             isVisible: true,
@@ -320,46 +211,15 @@ export const useGameState = () => {
           });
         }, 800);
       } else {
-        // Max 10 rounds to prevent infinite gameplay
-        if (cupGame.round >= 10) {
-          const winAmount = Math.floor(shared.currentBet * cupGame.multiplier);
-          setShared(prev => ({
-            ...prev,
-            balance: prev.balance + winAmount,
-            totalWon: prev.totalWon + winAmount,
-            biggestWin: Math.max(prev.biggestWin, winAmount),
-            streak: prev.streak + 1,
-          }));
-
-          setCupGame(prev => ({ ...prev, revealedCup: cupIndex, isPlaying: false }));
-          addXP(100);
-
-          addToHistory({
-            gameType: "cups",
-            bet: shared.currentBet,
-            won: true,
-            amount: winAmount,
-            multiplier: cupGame.multiplier,
-          });
-
-          setTimeout(() => {
-            setGameResult({
-              isVisible: true,
-              isWin: true,
-              amount: winAmount,
-              multiplier: cupGame.multiplier,
-              gameType: "cups",
-              message: "Max rounds reached!",
-            });
-          }, 800);
-          return;
-        }
-
+        // Survived - advance round
         const newRound = cupGame.round + 1;
         const newMultiplier = calculateCupMultiplier(newRound, 3);
         const newBombPos = Math.floor(Math.random() * 3);
 
-        setCupGame(prev => ({ ...prev, revealedCup: cupIndex }));
+        setCupGame(prev => ({
+          ...prev,
+          revealedCup: cupIndex,
+        }));
 
         setTimeout(() => {
           setCupGame({
@@ -378,7 +238,7 @@ export const useGameState = () => {
         }, 600);
       }
     }, 400);
-  }, [cupGame, shared.currentBet, addXP, calculateCupMultiplier, addToHistory]);
+  }, [cupGame, shared.currentBet, addXP]);
 
   const cashOutCups = useCallback(() => {
     if (!cupGame.isPlaying || !cupGame.canCashOut) return;
@@ -388,21 +248,11 @@ export const useGameState = () => {
     setShared(prev => ({
       ...prev,
       balance: prev.balance + winAmount,
-      totalWon: prev.totalWon + winAmount,
-      biggestWin: Math.max(prev.biggestWin, winAmount),
       streak: prev.streak + 1,
     }));
 
     setCupGame(prev => ({ ...prev, isPlaying: false, canCashOut: false }));
     addXP(50 * cupGame.round);
-
-    addToHistory({
-      gameType: "cups",
-      bet: shared.currentBet,
-      won: true,
-      amount: winAmount,
-      multiplier: cupGame.multiplier,
-    });
 
     setGameResult({
       isVisible: true,
@@ -412,21 +262,16 @@ export const useGameState = () => {
       gameType: "cups",
       message: `Survived ${cupGame.round} rounds`,
     });
-  }, [cupGame, shared.currentBet, addXP, addToHistory]);
+  }, [cupGame, shared.currentBet, addXP]);
 
-  // ====== REACTION GAME LOGIC - FIXED TIMING ======
+  // ====== REACTION GAME LOGIC ======
   const startReactionGame = useCallback(() => {
     if (shared.currentBet > shared.balance) {
       toast.error("Insufficient balance");
       return;
     }
 
-    setShared(prev => ({ 
-      ...prev, 
-      balance: prev.balance - prev.currentBet,
-      totalWagered: prev.totalWagered + prev.currentBet,
-      gamesPlayed: prev.gamesPlayed + 1,
-    }));
+    setShared(prev => ({ ...prev, balance: prev.balance - prev.currentBet }));
 
     setReactionGame({
       isPlaying: true,
@@ -436,38 +281,29 @@ export const useGameState = () => {
       multiplier: 1.0,
     });
 
-    // Clear any existing timer
-    if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current);
-
+    // Random delay before "GO"
     const delay = 1500 + Math.random() * 3000;
     
-    reactionTimerRef.current = setTimeout(() => {
-      reactionStartRef.current = performance.now();
+    timerRef.current = setTimeout(() => {
+      startTimeRef.current = Date.now();
       setReactionGame(prev => ({ ...prev, phase: "go" }));
     }, delay);
   }, [shared.currentBet, shared.balance]);
 
   const hitReaction = useCallback(() => {
     if (reactionGame.phase === "ready") {
-      if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current);
+      // Too early!
+      if (timerRef.current) clearTimeout(timerRef.current);
       
-      setReactionGame({
+      setReactionGame(prev => ({
+        ...prev,
         isPlaying: false,
         phase: "result",
-        targetTime: 0,
         reactionTime: -1,
         multiplier: 0,
-      });
+      }));
 
       setShared(prev => ({ ...prev, streak: 0 }));
-
-      addToHistory({
-        gameType: "reaction",
-        bet: shared.currentBet,
-        won: false,
-        amount: shared.currentBet,
-        multiplier: 0,
-      });
 
       setGameResult({
         isVisible: true,
@@ -481,8 +317,10 @@ export const useGameState = () => {
     }
 
     if (reactionGame.phase === "go") {
-      const reactionTime = performance.now() - reactionStartRef.current;
+      const reactionTime = Date.now() - startTimeRef.current;
       
+      // Calculate multiplier based on reaction time
+      // < 150ms = 5x, 150-200ms = 3x, 200-300ms = 2x, 300-400ms = 1.5x, 400-500ms = 1.2x, >500ms = lose
       let multiplier = 0;
       if (reactionTime < 150) multiplier = 5.0;
       else if (reactionTime < 200) multiplier = 3.0;
@@ -498,7 +336,7 @@ export const useGameState = () => {
         isPlaying: false,
         phase: "result",
         targetTime: 0,
-        reactionTime: Math.round(reactionTime),
+        reactionTime,
         multiplier,
       });
 
@@ -506,8 +344,6 @@ export const useGameState = () => {
         setShared(prev => ({
           ...prev,
           balance: prev.balance + winAmount,
-          totalWon: prev.totalWon + winAmount,
-          biggestWin: Math.max(prev.biggestWin, winAmount),
           streak: prev.streak + 1,
         }));
         addXP(30 * multiplier);
@@ -515,43 +351,27 @@ export const useGameState = () => {
         setShared(prev => ({ ...prev, streak: 0 }));
       }
 
-      addToHistory({
-        gameType: "reaction",
-        bet: shared.currentBet,
-        won: isWin,
-        amount: isWin ? winAmount : shared.currentBet,
-        multiplier,
-      });
-
       setGameResult({
         isVisible: true,
         isWin,
         amount: isWin ? winAmount : shared.currentBet,
         multiplier,
         gameType: "reaction",
-        message: `${Math.round(reactionTime)}ms`,
+        message: `${reactionTime}ms`,
       });
     }
-  }, [reactionGame.phase, shared.currentBet, addXP, addToHistory]);
+  }, [reactionGame.phase, shared.currentBet, addXP]);
 
-  // ====== MEMORY GAME LOGIC - FIXED INTERVALS ======
+  // ====== MEMORY GAME LOGIC ======
   const startMemoryGame = useCallback(() => {
     if (shared.currentBet > shared.balance) {
       toast.error("Insufficient balance");
       return;
     }
 
-    // Clear any existing intervals/timeouts
-    if (memoryIntervalRef.current) clearInterval(memoryIntervalRef.current);
-    if (memoryTimeoutRef.current) clearTimeout(memoryTimeoutRef.current);
+    setShared(prev => ({ ...prev, balance: prev.balance - prev.currentBet }));
 
-    setShared(prev => ({ 
-      ...prev, 
-      balance: prev.balance - prev.currentBet,
-      totalWagered: prev.totalWagered + prev.currentBet,
-      gamesPlayed: prev.gamesPlayed + 1,
-    }));
-
+    // Generate initial sequence (3 elements)
     const sequence = Array.from({ length: 3 }, () => Math.floor(Math.random() * 4));
 
     setMemoryGame({
@@ -564,14 +384,14 @@ export const useGameState = () => {
       multiplier: 1.5,
     });
 
-    // Show sequence with proper cleanup
+    // Show sequence
     let index = 0;
-    memoryIntervalRef.current = setInterval(() => {
+    const showInterval = setInterval(() => {
       setMemoryGame(prev => ({ ...prev, currentShowIndex: index }));
       index++;
       if (index >= sequence.length) {
-        if (memoryIntervalRef.current) clearInterval(memoryIntervalRef.current);
-        memoryTimeoutRef.current = setTimeout(() => {
+        clearInterval(showInterval);
+        setTimeout(() => {
           setMemoryGame(prev => ({ ...prev, phase: "input", currentShowIndex: -1 }));
         }, 600);
       }
@@ -584,17 +404,11 @@ export const useGameState = () => {
     const newUserSequence = [...memoryGame.userSequence, buttonIndex];
     const currentIndex = newUserSequence.length - 1;
 
+    // Check if correct
     if (buttonIndex !== memoryGame.sequence[currentIndex]) {
+      // Wrong!
       setMemoryGame(prev => ({ ...prev, isPlaying: false, phase: "result" }));
       setShared(prev => ({ ...prev, streak: 0 }));
-
-      addToHistory({
-        gameType: "memory",
-        bet: shared.currentBet,
-        won: false,
-        amount: shared.currentBet,
-        multiplier: memoryGame.multiplier,
-      });
 
       setGameResult({
         isVisible: true,
@@ -609,30 +423,22 @@ export const useGameState = () => {
 
     setMemoryGame(prev => ({ ...prev, userSequence: newUserSequence }));
 
+    // Completed sequence?
     if (newUserSequence.length === memoryGame.sequence.length) {
       const newLevel = memoryGame.level + 1;
       const newMultiplier = Number((1.5 * Math.pow(1.5, memoryGame.level)).toFixed(2));
 
       if (newLevel > 5) {
+        // Max level reached - auto win
         const winAmount = Math.floor(shared.currentBet * newMultiplier);
         setShared(prev => ({
           ...prev,
           balance: prev.balance + winAmount,
-          totalWon: prev.totalWon + winAmount,
-          biggestWin: Math.max(prev.biggestWin, winAmount),
           streak: prev.streak + 1,
         }));
         addXP(100);
 
         setMemoryGame(prev => ({ ...prev, isPlaying: false }));
-
-        addToHistory({
-          gameType: "memory",
-          bet: shared.currentBet,
-          won: true,
-          amount: winAmount,
-          multiplier: newMultiplier,
-        });
         
         setGameResult({
           isVisible: true,
@@ -645,6 +451,7 @@ export const useGameState = () => {
         return;
       }
 
+      // Next level - add to sequence
       const newSequence = [...memoryGame.sequence, Math.floor(Math.random() * 4)];
 
       setMemoryGame({
@@ -660,53 +467,36 @@ export const useGameState = () => {
       addXP(20);
       toast.success(`Level ${newLevel}! ${newMultiplier}x`, { icon: "🧠" });
 
-      // Clear previous intervals
-      if (memoryIntervalRef.current) clearInterval(memoryIntervalRef.current);
-      if (memoryTimeoutRef.current) clearTimeout(memoryTimeoutRef.current);
-
+      // Show new sequence
       let index = 0;
-      memoryTimeoutRef.current = setTimeout(() => {
-        memoryIntervalRef.current = setInterval(() => {
+      setTimeout(() => {
+        const showInterval = setInterval(() => {
           setMemoryGame(prev => ({ ...prev, currentShowIndex: index }));
           index++;
           if (index >= newSequence.length) {
-            if (memoryIntervalRef.current) clearInterval(memoryIntervalRef.current);
-            memoryTimeoutRef.current = setTimeout(() => {
+            clearInterval(showInterval);
+            setTimeout(() => {
               setMemoryGame(prev => ({ ...prev, phase: "input", currentShowIndex: -1 }));
             }, 600);
           }
         }, 700);
       }, 500);
     }
-  }, [memoryGame, shared.currentBet, addXP, addToHistory]);
+  }, [memoryGame, shared.currentBet, addXP]);
 
   const cashOutMemory = useCallback(() => {
     if (!memoryGame.isPlaying || memoryGame.level < 2) return;
-
-    // Clear intervals
-    if (memoryIntervalRef.current) clearInterval(memoryIntervalRef.current);
-    if (memoryTimeoutRef.current) clearTimeout(memoryTimeoutRef.current);
 
     const winAmount = Math.floor(shared.currentBet * memoryGame.multiplier);
 
     setShared(prev => ({
       ...prev,
       balance: prev.balance + winAmount,
-      totalWon: prev.totalWon + winAmount,
-      biggestWin: Math.max(prev.biggestWin, winAmount),
       streak: prev.streak + 1,
     }));
 
     setMemoryGame(prev => ({ ...prev, isPlaying: false }));
     addXP(30 * memoryGame.level);
-
-    addToHistory({
-      gameType: "memory",
-      bet: shared.currentBet,
-      won: true,
-      amount: winAmount,
-      multiplier: memoryGame.multiplier,
-    });
 
     setGameResult({
       isVisible: true,
@@ -716,22 +506,20 @@ export const useGameState = () => {
       gameType: "memory",
       message: `Level ${memoryGame.level}`,
     });
-  }, [memoryGame, shared.currentBet, addXP, addToHistory]);
+  }, [memoryGame, shared.currentBet, addXP]);
 
-  // ====== CRASH GAME LOGIC - COMPLETELY FIXED ======
+  // ====== CRASH GAME LOGIC ======
   const startCrashGame = useCallback(() => {
     if (shared.currentBet > shared.balance) {
       toast.error("Insufficient balance");
       return;
     }
 
-    setShared(prev => ({ 
-      ...prev, 
-      balance: prev.balance - prev.currentBet,
-      totalWagered: prev.totalWagered + prev.currentBet,
-      gamesPlayed: prev.gamesPlayed + 1,
-    }));
+    setShared(prev => ({ ...prev, balance: prev.balance - prev.currentBet }));
 
+    // Generate crash point (house edge built in)
+    // Using formula: crashPoint = 0.99 / (1 - random)
+    // This creates an exponential distribution favoring lower values
     const random = Math.random();
     const crashPoint = Math.max(1.0, Number((0.99 / (1 - random * 0.99)).toFixed(2)));
 
@@ -744,112 +532,76 @@ export const useGameState = () => {
       cashOutMultiplier: 1.0,
     });
 
-    crashStartTimeRef.current = performance.now();
-    isCrashRunningRef.current = true;
-
+    // Start multiplier climb
+    const startTime = Date.now();
     const tick = () => {
-      if (!isCrashRunningRef.current) return;
-
-      const elapsed = (performance.now() - crashStartTimeRef.current) / 1000;
+      const elapsed = (Date.now() - startTime) / 1000;
       const currentMult = Number((1 + elapsed * 0.5 + Math.pow(elapsed, 1.5) * 0.1).toFixed(2));
 
       if (currentMult >= crashPoint) {
-        isCrashRunningRef.current = false;
-        
-        setCrashGame(prev => {
-          const cashedOut = prev.cashedOut;
-          
-          if (!cashedOut) {
-            setShared(prevShared => ({ ...prevShared, streak: 0 }));
-            
-            addToHistory({
-              gameType: "crash",
-              bet: shared.currentBet,
-              won: false,
-              amount: shared.currentBet,
-              multiplier: crashPoint,
-            });
+        // CRASH!
+        setCrashGame(prev => ({
+          ...prev,
+          isPlaying: false,
+          phase: "crashed",
+          multiplier: crashPoint,
+        }));
 
-            setTimeout(() => {
-              setGameResult({
-                isVisible: true,
-                isWin: false,
-                amount: shared.currentBet,
-                multiplier: crashPoint,
-                gameType: "crash",
-                message: `Crashed at ${crashPoint}x`,
-              });
-            }, 100);
-          }
-
-          return {
-            ...prev,
-            isPlaying: false,
-            phase: "crashed",
+        if (!crashGame.cashedOut) {
+          setShared(prev => ({ ...prev, streak: 0 }));
+          setGameResult({
+            isVisible: true,
+            isWin: false,
+            amount: shared.currentBet,
             multiplier: crashPoint,
-          };
-        });
+            gameType: "crash",
+            message: `Crashed at ${crashPoint}x`,
+          });
+        }
         return;
       }
 
       setCrashGame(prev => {
-        if (!prev.cashedOut && prev.phase === "running") {
-          return { ...prev, multiplier: currentMult };
-        }
-        return prev;
+        if (prev.cashedOut || prev.phase === "crashed") return prev;
+        return { ...prev, multiplier: currentMult };
       });
 
-      if (isCrashRunningRef.current) {
-        crashRAFRef.current = requestAnimationFrame(tick);
+      if (!crashGame.cashedOut && crashGame.phase === "running") {
+        requestAnimationFrame(tick);
       }
     };
 
-    crashRAFRef.current = requestAnimationFrame(tick);
-  }, [shared.currentBet, shared.balance, addToHistory]);
+    requestAnimationFrame(tick);
+  }, [shared.currentBet, shared.balance, crashGame.cashedOut, crashGame.phase]);
 
   const cashOutCrash = useCallback(() => {
-    setCrashGame(prev => {
-      if (!prev.isPlaying || prev.cashedOut || prev.phase !== "running") return prev;
+    if (!crashGame.isPlaying || crashGame.cashedOut || crashGame.phase !== "running") return;
 
-      const winAmount = Math.floor(shared.currentBet * prev.multiplier);
+    const winAmount = Math.floor(shared.currentBet * crashGame.multiplier);
 
-      isCrashRunningRef.current = false;
-      if (crashRAFRef.current) cancelAnimationFrame(crashRAFRef.current);
+    setCrashGame(prev => ({
+      ...prev,
+      cashedOut: true,
+      cashOutMultiplier: prev.multiplier,
+    }));
 
-      setShared(prevShared => ({
-        ...prevShared,
-        balance: prevShared.balance + winAmount,
-        totalWon: prevShared.totalWon + winAmount,
-        biggestWin: Math.max(prevShared.biggestWin, winAmount),
-        streak: prevShared.streak + 1,
-      }));
+    setShared(prev => ({
+      ...prev,
+      balance: prev.balance + winAmount,
+      streak: prev.streak + 1,
+    }));
 
-      addXP(Math.floor(prev.multiplier * 20));
+    addXP(Math.floor(crashGame.multiplier * 20));
 
-      addToHistory({
-        gameType: "crash",
-        bet: shared.currentBet,
-        won: true,
-        amount: winAmount,
-        multiplier: prev.multiplier,
-      });
-
-      setGameResult({
-        isVisible: true,
-        isWin: true,
-        amount: winAmount,
-        multiplier: prev.multiplier,
-        gameType: "crash",
-        message: `Cashed out at ${prev.multiplier}x`,
-      });
-
-      return {
-        ...prev,
-        cashedOut: true,
-        cashOutMultiplier: prev.multiplier,
-      };
+    setGameResult({
+      isVisible: true,
+      isWin: true,
+      amount: winAmount,
+      multiplier: crashGame.multiplier,
+      gameType: "crash",
+      message: `Cashed out at ${crashGame.multiplier}x`,
     });
-  }, [shared.currentBet, addXP, addToHistory]);
+  }, [crashGame, shared.currentBet, addXP]);
 
   // Play again handlers
   const playAgain = useCallback(() => {
@@ -889,8 +641,6 @@ export const useGameState = () => {
     connectWallet,
     isConnected: true,
     walletAddress: "0x1234567890abcdef1234567890abcdef12345678",
-    winRate,
-    gameHistory,
     
     // Cup game
     cupGame,

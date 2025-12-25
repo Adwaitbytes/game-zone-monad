@@ -115,6 +115,7 @@ const Index = () => {
                 streak={gameState.streak}
                 xp={gameState.xp}
                 level={gameState.level}
+                gamesPlayed={gameState.gamesPlayed}
               />
             </motion.div>
 

@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
+import { memo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonText } from "@/components/ui/NeonText";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Zap } from "lucide-react";
+import { soundManager } from "@/lib/soundManager";
 
 interface ReactionGameState {
   isPlaying: boolean;
@@ -154,4 +156,4 @@ const ReactionGame = ({
   );
 };
 
-export default ReactionGame;
+export default memo(ReactionGame);

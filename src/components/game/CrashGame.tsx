@@ -3,7 +3,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonText } from "@/components/ui/NeonText";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Rocket, Wallet } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
+import { soundManager } from "@/lib/soundManager";
 
 interface CrashGameState {
   isPlaying: boolean;
@@ -192,4 +193,4 @@ const CrashGame = ({
   );
 };
 
-export default CrashGame;
+export default memo(CrashGame);

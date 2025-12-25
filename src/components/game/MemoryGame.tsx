@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
+import { memo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonText } from "@/components/ui/NeonText";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Brain, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { soundManager } from "@/lib/soundManager";
 
 interface MemoryGameState {
   isPlaying: boolean;
@@ -160,4 +162,4 @@ const MemoryGame = ({
   );
 };
 
-export default MemoryGame;
+export default memo(MemoryGame);

@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
+import { memo } from "react";
 import Cup from "./Cup";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonText } from "@/components/ui/NeonText";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Wallet } from "lucide-react";
+import { soundManager } from "@/lib/soundManager";
 
 interface CupGameState {
   round: number;
@@ -38,6 +40,21 @@ const CupGame = ({
   const { round, multiplier, isPlaying, selectedCup, revealedCup, bombPosition, cupsCount, canCashOut } = gameState;
   const potentialWin = Math.floor(currentBet * multiplier);
   const betPresets = [50, 100, 250, 500];
+
+  const handleStart = () => {
+    soundManager.play('start');
+    onStart();
+  };
+
+  const handleCashOut = () => {
+    soundManager.play('cashout');
+    onCashOut();
+  };
+
+  const handleBetChange = (amount: number) => {
+    soundManager.play('click');
+    onBetChange(amount);
+  };
 
   return (
     <div className="space-y-6">
@@ -104,7 +121,7 @@ const CupGame = ({
                     variant={currentBet === preset ? "primary" : "ghost"}
                     size="sm"
                     className="flex-1"
-                    onClick={() => onBetChange(Math.min(preset, balance))}
+                    onClick={() => handleBetChange(Math.min(preset, balance))}
                     disabled={preset > balance}
                   >
                     {preset}
@@ -117,7 +134,7 @@ const CupGame = ({
                   variant="ghost"
                   size="sm"
                   className="flex-1"
-                  onClick={() => onBetChange(Math.floor(balance / 2))}
+                  onClick={() => handleBetChange(Math.floor(balance / 2))}
                   disabled={balance < 20}
                 >
                   ½ Half
@@ -126,7 +143,7 @@ const CupGame = ({
                   variant="ghost"
                   size="sm"
                   className="flex-1"
-                  onClick={() => onBetChange(balance)}
+                  onClick={() => handleBetChange(balance)}
                 >
                   Max
                 </GlowButton>
@@ -137,7 +154,7 @@ const CupGame = ({
               variant="primary"
               size="xl"
               className="w-full"
-              onClick={onStart}
+              onClick={handleStart}
               disabled={currentBet > balance || currentBet <= 0}
               pulse
             >
@@ -149,7 +166,7 @@ const CupGame = ({
             variant="accent"
             size="xl"
             className="w-full"
-            onClick={onCashOut}
+            onClick={handleCashOut}
             disabled={!canCashOut}
             pulse={canCashOut}
           >
@@ -162,4 +179,4 @@ const CupGame = ({
   );
 };
 
-export default CupGame;
+export default memo(CupGame);

@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonText } from "@/components/ui/NeonText";
 import { Wallet, Volume2, VolumeX } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GameType } from "@/hooks/useGameState";
+import { soundManager } from "@/lib/soundManager";
 
 interface HeaderProps {
   isConnected: boolean;
@@ -22,7 +23,21 @@ const GAMES: { id: GameType; name: string; icon: string }[] = [
 ];
 
 const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, onGameChange }: HeaderProps) => {
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
+
+  const toggleSound = () => {
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    soundManager.setEnabled(!newMutedState);
+    if (!newMutedState) {
+      soundManager.play('click');
+    }
+  };
+
+  const handleGameChange = (game: GameType) => {
+    soundManager.play('click');
+    onGameChange(game);
+  };
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -54,7 +69,7 @@ const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, on
           {GAMES.map((game) => (
             <motion.button
               key={game.id}
-              onClick={() => onGameChange(game.id)}
+              onClick={() => handleGameChange(game.id)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
                 activeGame === game.id 
                   ? "bg-primary/20 text-primary" 
@@ -73,7 +88,7 @@ const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, on
         <div className="flex items-center gap-2 shrink-0">
           {/* Sound Toggle */}
           <motion.button
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={toggleSound}
             className="p-2 rounded-lg hover:bg-muted/50 transition-colors"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

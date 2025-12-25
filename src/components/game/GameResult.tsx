@@ -4,6 +4,8 @@ import { NeonText } from "@/components/ui/NeonText";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { RotateCcw, Share2, X } from "lucide-react";
 import { GameType } from "@/hooks/useGameState";
+import { soundManager } from "@/lib/soundManager";
+import { useEffect } from "react";
 
 interface GameResultProps {
   isVisible: boolean;
@@ -33,6 +35,12 @@ const GameResult = ({
   onPlayAgain,
   onClose,
 }: GameResultProps) => {
+  // Play sound when result is shown
+  useEffect(() => {
+    if (isVisible) {
+      soundManager.play(isWin ? 'win' : 'lose');
+    }
+  }, [isVisible, isWin]);
   return (
     <AnimatePresence>
       {isVisible && (

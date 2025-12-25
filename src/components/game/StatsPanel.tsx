@@ -8,9 +8,10 @@ interface StatsPanelProps {
   streak: number;
   xp: number;
   level: number;
+  gamesPlayed?: number;
 }
 
-const StatsPanel = ({ balance, streak, xp, level }: StatsPanelProps) => {
+const StatsPanel = ({ balance, streak, xp, level, gamesPlayed = 0 }: StatsPanelProps) => {
   const xpProgress = (xp % 1000) / 1000;
 
   return (
@@ -53,13 +54,13 @@ const StatsPanel = ({ balance, streak, xp, level }: StatsPanelProps) => {
         <p className="text-xs text-muted-foreground mt-1">{xp % 1000}/1000 XP</p>
       </GlassCard>
 
-      {/* Games Played placeholder */}
+      {/* Games Played */}
       <GlassCard className="p-3">
         <div className="flex items-center gap-2 mb-1">
           <Target className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Today</span>
+          <span className="text-xs text-muted-foreground">Played</span>
         </div>
-        <p className="text-xl font-bold text-foreground">12</p>
+        <p className="text-xl font-bold text-foreground">{gamesPlayed}</p>
         <p className="text-xs text-muted-foreground">games</p>
       </GlassCard>
     </div>
