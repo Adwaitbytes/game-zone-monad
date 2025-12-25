@@ -13,17 +13,17 @@ interface GlowButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
 const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
   ({ className, variant = "primary", size = "md", glow = true, pulse = false, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-neon-primary",
-      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-neon-secondary",
-      accent: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-neon-accent",
-      danger: "bg-gradient-danger text-primary-foreground shadow-neon-primary",
-      ghost: "bg-transparent text-foreground border border-border hover:bg-muted hover:border-primary/50",
+      primary: "bg-gradient-primary text-primary-foreground shadow-glow",
+      secondary: "bg-gradient-danger text-secondary-foreground shadow-glow-secondary",
+      accent: "bg-gradient-gold text-accent-foreground shadow-glow-accent",
+      danger: "bg-gradient-danger text-white shadow-glow-secondary",
+      ghost: "bg-transparent text-foreground border border-border hover:bg-muted/50 hover:border-primary/30",
     };
 
     const sizes = {
-      sm: "px-3 py-1.5 text-xs rounded-md",
+      sm: "px-3 py-1.5 text-xs rounded-lg",
       md: "px-4 py-2 text-sm rounded-lg",
-      lg: "px-6 py-3 text-base rounded-lg",
+      lg: "px-6 py-3 text-base rounded-xl",
       xl: "px-8 py-4 text-lg rounded-xl",
     };
 
@@ -31,8 +31,8 @@ const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
       <motion.button
         ref={ref}
         className={cn(
-          "font-display font-semibold uppercase tracking-wider transition-all duration-300",
-          "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none",
+          "font-semibold tracking-wide transition-all duration-200",
+          "disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none",
           "relative overflow-hidden",
           variants[variant],
           sizes[size],
@@ -40,13 +40,13 @@ const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
           pulse && !disabled && "animate-glow-pulse",
           className
         )}
-        whileHover={disabled ? {} : { scale: 1.02 }}
+        whileHover={disabled ? {} : { scale: 1.02, y: -1 }}
         whileTap={disabled ? {} : { scale: 0.98 }}
         disabled={disabled}
         {...props}
       >
         {/* Shimmer overlay */}
-        <span className="absolute inset-0 shimmer opacity-0 hover:opacity-100 transition-opacity duration-300" />
+        <span className="absolute inset-0 shimmer opacity-0 hover:opacity-100 transition-opacity duration-500" />
         
         {/* Content */}
         <span className="relative z-10 flex items-center justify-center gap-2">

@@ -1,24 +1,35 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { GlowButton } from "@/components/ui/GlowButton";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonText } from "@/components/ui/NeonText";
-import { RotateCcw, Share2 } from "lucide-react";
+import { GlowButton } from "@/components/ui/GlowButton";
+import { RotateCcw, Share2, X } from "lucide-react";
+import { GameType } from "@/hooks/useGameState";
 
 interface GameResultProps {
   isVisible: boolean;
   isWin: boolean;
   amount: number;
   multiplier: number;
-  round: number;
+  gameType: GameType;
+  message?: string;
   onPlayAgain: () => void;
   onClose: () => void;
 }
+
+const GAME_NAMES: Record<GameType, string> = {
+  cups: "Cup Game",
+  reaction: "Reflex Test",
+  memory: "Memory Game",
+  crash: "Crash",
+};
 
 const GameResult = ({
   isVisible,
   isWin,
   amount,
   multiplier,
-  round,
+  gameType,
+  message,
   onPlayAgain,
   onClose,
 }: GameResultProps) => {
@@ -33,7 +44,7 @@ const GameResult = ({
         >
           {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 bg-background/80 backdrop-blur-md"
+            className="absolute inset-0 bg-background/90 backdrop-blur-md"
             onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -42,134 +53,115 @@ const GameResult = ({
 
           {/* Result Card */}
           <motion.div
-            className={`relative glass-elevated rounded-3xl p-8 md:p-12 text-center max-w-md w-full border ${
-              isWin ? "border-secondary/50" : "border-primary/50"
-            }`}
-            initial={{ scale: 0.8, y: 50, opacity: 0 }}
+            className="relative w-full max-w-sm"
+            initial={{ scale: 0.9, y: 30, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.8, y: 50, opacity: 0 }}
+            exit={{ scale: 0.9, y: 30, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
-            {/* Glow effect */}
-            <div 
-              className={`absolute -inset-4 rounded-3xl blur-3xl ${
-                isWin ? "bg-secondary/20" : "bg-primary/20"
-              }`}
-            />
+            <GlassCard 
+              variant={isWin ? "primary" : "danger"} 
+              className="p-8 text-center"
+            >
+              {/* Close button */}
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
 
-            {/* Content */}
-            <div className="relative space-y-6">
               {/* Icon */}
               <motion.div
-                className="text-8xl"
+                className="text-7xl mb-4"
                 animate={isWin ? { 
                   scale: [1, 1.2, 1],
-                  rotate: [0, 10, -10, 0]
+                  rotate: [0, 5, -5, 0]
                 } : {
-                  scale: [1, 0.9, 1],
+                  scale: [1, 0.95, 1],
                 }}
-                transition={{ duration: 0.5, repeat: isWin ? 2 : 0 }}
+                transition={{ duration: 0.5 }}
               >
-                {isWin ? "🎉" : "💀"}
+                {isWin ? "🎉" : "💔"}
               </motion.div>
 
               {/* Title */}
-              <div>
-                <NeonText 
-                  variant={isWin ? "secondary" : "primary"} 
-                  className="text-4xl md:text-5xl"
-                  as="h2"
-                >
-                  {isWin ? "CASHED OUT!" : "ELIMINATED"}
-                </NeonText>
-                <p className="text-muted-foreground mt-2">
-                  {isWin 
-                    ? `You survived ${round} rounds!` 
-                    : `Eliminated at round ${round}`
-                  }
-                </p>
-              </div>
+              <NeonText 
+                variant={isWin ? "primary" : "secondary"} 
+                className="text-3xl mb-1"
+                as="h2"
+              >
+                {isWin ? "You Won!" : "You Lost"}
+              </NeonText>
+              
+              <p className="text-muted-foreground text-sm mb-6">
+                {GAME_NAMES[gameType]} {message && `• ${message}`}
+              </p>
 
               {/* Amount */}
-              <div className="py-4 px-6 rounded-xl bg-muted/30">
-                <p className="text-sm text-muted-foreground mb-1">
-                  {isWin ? "You won" : "You lost"}
-                </p>
+              <div className="py-4 px-6 rounded-xl bg-muted/30 mb-6">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 0.3, type: "spring" }}
+                  transition={{ delay: 0.2, type: "spring" }}
                 >
                   <NeonText 
-                    variant={isWin ? "secondary" : "primary"}
-                    className="text-5xl font-black"
+                    variant={isWin ? "primary" : "secondary"}
+                    className="text-4xl font-bold"
                   >
                     {isWin ? "+" : "-"}{amount.toLocaleString()}
                   </NeonText>
                 </motion.div>
-                <p className="text-sm text-muted-foreground mt-1">MON</p>
-                {isWin && (
-                  <p className="text-xs text-accent mt-2">
-                    {multiplier}x multiplier achieved
+                {multiplier > 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {multiplier.toFixed(2)}x multiplier
                   </p>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex gap-3">
                 <GlowButton
-                  variant={isWin ? "secondary" : "primary"}
+                  variant={isWin ? "primary" : "danger"}
                   size="lg"
                   className="flex-1"
                   onClick={onPlayAgain}
                 >
-                  <RotateCcw className="w-5 h-5" />
+                  <RotateCcw className="w-4 h-4" />
                   Play Again
                 </GlowButton>
                 <GlowButton
                   variant="ghost"
                   size="lg"
-                  className="flex-1"
+                  onClick={onClose}
                 >
-                  <Share2 className="w-5 h-5" />
-                  Share
+                  <Share2 className="w-4 h-4" />
                 </GlowButton>
               </div>
-
-              {/* Near-miss message for losses */}
-              {!isWin && round > 2 && (
-                <motion.p
-                  className="text-sm text-muted-foreground"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  So close! You were {round - 1} rounds away from a {(multiplier * 1.5).toFixed(2)}x payout
-                </motion.p>
-              )}
-            </div>
+            </GlassCard>
           </motion.div>
 
           {/* Win particles */}
           {isWin && (
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {Array.from({ length: 20 }).map((_, i) => (
+              {Array.from({ length: 15 }).map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute w-2 h-2 bg-secondary rounded-full"
+                  className="absolute w-2 h-2 bg-primary rounded-full"
                   style={{
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
+                    left: `${30 + Math.random() * 40}%`,
+                    top: "50%",
                   }}
                   initial={{ scale: 0, opacity: 1 }}
                   animate={{
                     scale: [0, 1, 0],
-                    y: [-20, -100],
+                    y: [0, -150 - Math.random() * 100],
+                    x: [(Math.random() - 0.5) * 100],
                     opacity: [1, 1, 0],
                   }}
                   transition={{
-                    duration: 1.5,
-                    delay: i * 0.1,
+                    duration: 1.2,
+                    delay: i * 0.05,
                     ease: "easeOut",
                   }}
                 />

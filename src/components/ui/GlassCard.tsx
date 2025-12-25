@@ -3,31 +3,29 @@ import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
 
 interface GlassCardProps extends HTMLMotionProps<"div"> {
-  variant?: "default" | "elevated" | "danger" | "success";
-  glow?: boolean;
+  variant?: "default" | "elevated" | "primary" | "danger";
   hover?: boolean;
 }
 
 const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ className, variant = "default", glow = false, hover = true, children, ...props }, ref) => {
+  ({ className, variant = "default", hover = false, children, ...props }, ref) => {
     const variants = {
-      default: "glass border-border/30",
-      elevated: "glass-elevated border-border/20",
-      danger: "glass border-primary/30 shadow-neon-primary",
-      success: "glass border-secondary/30 shadow-neon-secondary",
+      default: "glass",
+      elevated: "glass-elevated",
+      primary: "glass border-primary/20 shadow-glow-sm",
+      danger: "glass border-secondary/20 shadow-glow-secondary",
     };
 
     return (
       <motion.div
         ref={ref}
         className={cn(
-          "rounded-xl p-4 transition-all duration-300",
+          "rounded-2xl p-5 transition-all duration-300",
           variants[variant],
-          glow && "animate-glow-pulse",
-          hover && "hover:border-primary/50 hover:shadow-neon-primary",
+          hover && "game-card cursor-pointer hover:border-primary/40",
           className
         )}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         {...props}
