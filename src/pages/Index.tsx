@@ -88,6 +88,7 @@ const Index = () => {
         balance={gameState.balance}
         activeGame={gameState.activeGame}
         onGameChange={gameState.setActiveGame}
+        onRefill={gameState.refillBalance}
       />
 
       {/* Main content */}

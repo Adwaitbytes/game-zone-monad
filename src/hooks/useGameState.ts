@@ -872,6 +872,19 @@ export const useGameState = () => {
     }, 300);
   }, [activeGame, closeResult, startCupGame, startReactionGame, startMemoryGame, startCrashGame]);
 
+  // Refill balance
+  const refillBalance = useCallback(() => {
+    setShared(prev => ({
+      ...prev,
+      balance: INITIAL_BALANCE,
+      currentBet: Math.min(100, INITIAL_BALANCE),
+    }));
+    toast.success("Balance refilled!", { 
+      description: `${INITIAL_BALANCE.toLocaleString()} credits added`,
+      icon: "💰" 
+    });
+  }, []);
+
   // Mock wallet
   const connectWallet = useCallback(() => {
     toast.success("Wallet connected!", { description: "0x1234...5678" });
@@ -886,6 +899,7 @@ export const useGameState = () => {
     gameResult,
     closeResult,
     playAgain,
+    refillBalance,
     connectWallet,
     isConnected: true,
     walletAddress: "0x1234567890abcdef1234567890abcdef12345678",

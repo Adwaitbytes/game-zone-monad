@@ -13,6 +13,7 @@ interface HeaderProps {
   balance: number;
   activeGame: GameType;
   onGameChange: (game: GameType) => void;
+  onRefill: () => void;
 }
 
 const GAMES: { id: GameType; name: string; icon: string }[] = [
@@ -22,7 +23,7 @@ const GAMES: { id: GameType; name: string; icon: string }[] = [
   { id: "crash", name: "Crash", icon: "🚀" },
 ];
 
-const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, onGameChange }: HeaderProps) => {
+const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, onGameChange, onRefill }: HeaderProps) => {
   const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
 
   const toggleSound = () => {
@@ -102,13 +103,29 @@ const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, on
 
           {/* Wallet/Balance */}
           {isConnected ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-xl">
-              <NeonText variant="primary" className="text-sm">
-                {balance.toLocaleString()}
-              </NeonText>
-              <span className="text-xs text-muted-foreground hidden sm:inline">
-                {formatAddress(walletAddress || "")}
-              </span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-xl">
+                <NeonText variant="primary" className="text-sm">
+                  {balance.toLocaleString()}
+                </NeonText>
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  {formatAddress(walletAddress || "")}
+                </span>
+              </div>
+              {balance <= 100 && (
+                <motion.button
+                  onClick={() => {
+                    soundManager.play('click');
+                    onRefill();
+                  }}
+                  className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-xl font-medium text-sm border border-emerald-500/30 transition-colors flex items-center gap-1.5"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span>💰</span>
+                  <span className="hidden sm:inline">Refill</span>
+                </motion.button>
+              )}
             </div>
           ) : (
             <motion.button
