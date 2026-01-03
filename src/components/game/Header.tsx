@@ -1,19 +1,17 @@
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonText } from "@/components/ui/NeonText";
-import { Wallet, Volume2, VolumeX } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Wallet, Volume2, VolumeX, Trophy, Home, Star } from "lucide-react";
+import { useState } from "react";
 import { GameType } from "@/hooks/useGameState";
 import { soundManager } from "@/lib/soundManager";
+import { useWeb3 } from "@/hooks/useWeb3";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
-  isConnected: boolean;
-  onConnect: () => void;
-  walletAddress?: string;
-  balance: number;
-  activeGame: GameType;
-  onGameChange: (game: GameType) => void;
-  onRefill: () => void;
+  activeGame?: GameType;
+  onGameChange?: (game: GameType) => void;
+  showGameNav?: boolean;
 }
 
 const GAMES: { id: GameType; name: string; icon: string }[] = [
@@ -23,8 +21,10 @@ const GAMES: { id: GameType; name: string; icon: string }[] = [
   { id: "crash", name: "Crash", icon: "🚀" },
 ];
 
-const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, onGameChange, onRefill }: HeaderProps) => {
+const Header = ({ activeGame, onGameChange, showGameNav = true }: HeaderProps) => {
   const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
+  const { address, isConnected, balanceFormatted, symbol, connect } = useWeb3();
+  const navigate = useNavigate();
 
   const toggleSound = () => {
     const newMutedState = !isMuted;
@@ -37,7 +37,7 @@ const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, on
 
   const handleGameChange = (game: GameType) => {
     soundManager.play('click');
-    onGameChange(game);
+    onGameChange?.(game);
   };
 
   const formatAddress = (address: string) => {
@@ -54,36 +54,73 @@ const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, on
       <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
         {/* Logo */}
         <motion.div 
-          className="flex items-center gap-2 shrink-0"
+          className="flex items-center gap-3 shrink-0 cursor-pointer"
           whileHover={{ scale: 1.02 }}
+          onClick={() => navigate('/')}
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-            <span className="text-lg">🎰</span>
+            <span className="text-lg">🎮</span>
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-lg font-bold text-foreground tracking-tight">Arcade</h1>
+            <h1 className="text-lg font-bold text-foreground tracking-tight">Game Zone</h1>
+            <p className="text-xs text-muted-foreground">Powered by Monad</p>
           </div>
         </motion.div>
 
-        {/* Game Navigation */}
-        <nav className="flex items-center gap-1 bg-muted/30 rounded-xl p-1">
-          {GAMES.map((game) => (
-            <motion.button
-              key={game.id}
-              onClick={() => handleGameChange(game.id)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
-                activeGame === game.id 
-                  ? "bg-primary/20 text-primary" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <span>{game.icon}</span>
-              <span className="hidden sm:inline">{game.name}</span>
-            </motion.button>
-          ))}
+        {/* Navigation */}
+        <nav className="flex items-center gap-2">
+          <motion.button
+            onClick={() => navigate('/')}
+            className="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Home</span>
+          </motion.button>
+          
+          <motion.button
+            onClick={() => navigate('/tournaments')}
+            className="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Trophy className="w-4 h-4" />
+            <span className="hidden sm:inline">Tournaments</span>
+          </motion.button>
+
+          <motion.button
+            onClick={() => navigate('/rewards')}
+            className="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Star className="w-4 h-4" />
+            <span className="hidden sm:inline">Rewards</span>
+          </motion.button>
         </nav>
+
+        {/* Game Navigation (only on play page) */}
+        {showGameNav && activeGame && (
+          <nav className="flex items-center gap-1 bg-muted/30 rounded-xl p-1">
+            {GAMES.map((game) => (
+              <motion.button
+                key={game.id}
+                onClick={() => handleGameChange(game.id)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  activeGame === game.id 
+                    ? "bg-primary/20 text-primary" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span>{game.icon}</span>
+                <span className="hidden sm:inline">{game.name}</span>
+              </motion.button>
+            ))}
+          </nav>
+        )}
 
         {/* Right side */}
         <div className="flex items-center gap-2 shrink-0">
@@ -102,40 +139,26 @@ const Header = ({ isConnected, onConnect, walletAddress, balance, activeGame, on
           </motion.button>
 
           {/* Wallet/Balance */}
-          {isConnected ? (
+          {isConnected && address ? (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-xl">
-                <NeonText variant="primary" className="text-sm">
-                  {balance.toLocaleString()}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-xl border border-primary/20">
+                <NeonText variant="primary" className="text-sm font-bold">
+                  {parseFloat(balanceFormatted).toFixed(4)} {symbol}
                 </NeonText>
                 <span className="text-xs text-muted-foreground hidden sm:inline">
-                  {formatAddress(walletAddress || "")}
+                  {formatAddress(address)}
                 </span>
               </div>
-              {balance <= 100 && (
-                <motion.button
-                  onClick={() => {
-                    soundManager.play('click');
-                    onRefill();
-                  }}
-                  className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-xl font-medium text-sm border border-emerald-500/30 transition-colors flex items-center gap-1.5"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <span>💰</span>
-                  <span className="hidden sm:inline">Refill</span>
-                </motion.button>
-              )}
             </div>
           ) : (
             <motion.button
-              onClick={onConnect}
+              onClick={connect}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-primary text-primary-foreground rounded-xl font-medium text-sm shadow-glow"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <Wallet className="w-4 h-4" />
-              <span className="hidden sm:inline">Connect</span>
+              <span>Connect Wallet</span>
             </motion.button>
           )}
         </div>

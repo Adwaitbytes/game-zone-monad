@@ -82,13 +82,9 @@ const Index = () => {
 
       {/* Header */}
       <Header
-        isConnected={gameState.isConnected}
-        onConnect={gameState.connectWallet}
-        walletAddress={gameState.walletAddress}
-        balance={gameState.balance}
         activeGame={gameState.activeGame}
         onGameChange={gameState.setActiveGame}
-        onRefill={gameState.refillBalance}
+        showGameNav={true}
       />
 
       {/* Main content */}

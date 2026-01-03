@@ -10,6 +10,9 @@ import {
   Star, Play, ArrowRight
 } from "lucide-react";
 import { soundManager } from "@/lib/soundManager";
+import { useWeb3 } from "@/hooks/useWeb3";
+import { analytics } from "@/lib/analytics";
+import Header from "@/components/game/Header";
 
 const FEATURED_GAMES = [
   {
@@ -59,14 +62,16 @@ const STATS = [
 
 const Landing = () => {
   const navigate = useNavigate();
-  const [isConnecting, setIsConnecting] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { scrollY } = useScroll();
+  const { connect, isConnected, address } = useWeb3();
   
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 400], [1, 0.9]);
 
   useEffect(() => {
+    analytics.track('landing_page_viewed');
+    
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -74,20 +79,25 @@ const Landing = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  useEffect(() => {
+    if (isConnected && address) {
+      analytics.trackWalletConnect(address);
+    }
+  }, [isConnected, address]);
+
   const handleConnectWallet = async () => {
-    setIsConnecting(true);
     soundManager.play('start');
-    
-    // Simulate wallet connection
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    soundManager.play('win');
-    setIsConnecting(false);
-    navigate("/play");
+    analytics.track('wallet_connect_initiated', { source: 'landing_cta' });
+    connect();
+    if (isConnected) {
+      soundManager.play('win');
+      navigate("/play");
+    }
   };
 
   const handlePlayAsGuest = () => {
     soundManager.play('click');
+    analytics.track('play_as_guest_clicked');
     navigate("/play");
   };
 
@@ -195,21 +205,18 @@ const Landing = () => {
               variant="primary"
               size="xl"
               onClick={handleConnectWallet}
-              disabled={isConnecting}
               pulse
               className="min-w-[220px] text-lg h-14"
             >
-              {isConnecting ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Sparkles className="w-5 h-5" />
-                </motion.div>
-              ) : (
+              {!isConnected ? (
                 <>
                   <Wallet className="w-5 h-5" />
                   Connect Wallet
+                </>
+              ) : (
+                <>
+                  <Play className="w-5 h-5" />
+                  Play Now
                 </>
               )}
             </GlowButton>
