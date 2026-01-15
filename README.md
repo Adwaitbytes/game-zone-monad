@@ -12,7 +12,7 @@ A premium Web3 gaming platform built on the Monad blockchain, inspired by MPL, D
   - 🚀 **Crash Game**: Cash out before the rocket crashes (unlimited multiplier)
 
 ### Web3 Integration
-- **Multi-Wallet Support**: MetaMask, WalletConnect, Coinbase Wallet
+- **Multi-Wallet Support**: MetaMask, WalletConnect etc
 - **Monad Blockchain**: Built for high-performance gaming on Monad
 - **RainbowKit**: Beautiful wallet connection UI
 - **Real-time Balance**: Live MON token balance updates
