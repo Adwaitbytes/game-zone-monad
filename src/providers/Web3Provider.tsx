@@ -5,7 +5,15 @@ import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import { wagmiConfig } from '@/config/wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+      staleTime: 60000,
+    },
+  },
+});
 
 interface Web3ProviderProps {
   children: ReactNode;
@@ -16,8 +24,9 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
+          modalSize="compact"
           theme={darkTheme({
-            accentColor: '#8B5CF6',
+            accentColor: '#10b981',
             accentColorForeground: 'white',
             borderRadius: 'medium',
             fontStack: 'system',

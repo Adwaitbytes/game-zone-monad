@@ -6,8 +6,13 @@ export const useWeb3 = () => {
   const { address, isConnected, chain } = useAccount();
   const { disconnect } = useDisconnect();
   const { openConnectModal } = useConnectModal();
-  const { data: balance } = useBalance({
+  const { data: balance, isLoading: balanceLoading } = useBalance({
     address: address,
+    query: {
+      enabled: !!address,
+      staleTime: 30000,
+      refetchInterval: false,
+    },
   });
 
   const connect = () => {
@@ -25,6 +30,7 @@ export const useWeb3 = () => {
     chain,
     balance: balance ? parseFloat(formattedBalance) : 0,
     balanceFormatted: formattedBalance,
+    balanceLoading,
     symbol: displaySymbol,
     connect,
     disconnect,
