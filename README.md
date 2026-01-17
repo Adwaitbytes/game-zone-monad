@@ -15,7 +15,7 @@ A premium Web3 gaming platform built on the Monad blockchain, inspired by MPL, D
 - **Multi-Wallet Support**: MetaMask, WalletConnect etc
 - **Monad Blockchain**: Built for high-performance gaming on Monad
 - **RainbowKit**: Beautiful wallet connection UI
-- **Real-time Balance**: Live MON token balance updates
+- **Real-time Balance**: Live MON token balance update
 
 ### Tournament System
 - **Live Tournaments**: Compete in real-time skill-based competitions
